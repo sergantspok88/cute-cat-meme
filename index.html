@@ -121,12 +121,12 @@
       { id: "diverse", name: "Open Heart", emoji: "🌈", desc: "Pet 10 different moods", check: (s) => Object.keys(s.petByMood).length >= 10 },
       { id: "every_mood", name: "Cat Therapist", emoji: "🛋️", desc: "Pet every mood at least once", check: (s) => Object.keys(s.petByMood).length >= catFaces.length },
       { id: "patient", name: "Patient Soul", emoji: "🍵", desc: "Pet without combo (slow & steady, 20 pets)", check: (s) => s.slowPets >= 20 },
-      { id: "quick_draw", name: "Quick Draw", emoji: "🤠", desc: "Reach combo x10 in under 2s", check: (s) => s.fastCombo10 },
+      { id: "quick_draw", name: "Quick Draw", emoji: "🤠", desc: "Reach combo x10 in under 3s", check: (s) => s.fastCombo10 },
       { id: "explorer", name: "Explorer", emoji: "🧭", desc: "See 15 different moods", check: (s) => s.seenMoods.length >= 15 },
       { id: "shock_value", name: "Heart Stopper", emoji: "⚡", desc: "Pet Shocked kitty", check: (s) => (s.petByMood["Shocked"] || 0) >= 1 },
       { id: "singer", name: "Choir Member", emoji: "🎤", desc: "Pet Singing kitty", check: (s) => (s.petByMood["Singing"] || 0) >= 1 },
       { id: "starlight", name: "Stargazer", emoji: "✨", desc: "Pet Starstruck kitty 10 times", check: (s) => (s.petByMood["Starstruck"] || 0) >= 10 },
-      { id: "midnight", name: "Night Owl", emoji: "🦉", desc: "Pet between midnight and 4am", check: (s) => s.midnightPet },
+      { id: "midnight", name: "Night Owl", emoji: "🦉", desc: "Pet between 11pm and 5am", check: (s) => s.midnightPet },
       { id: "marathon", name: "Marathoner", emoji: "🏃", desc: "5000 total pets", check: (s) => s.petCount >= 5000 },
       { id: "golden_touch", name: "Golden Touch", emoji: "🌟", desc: "Find the rare Golden Cat", check: (s) => s.goldenFinds >= 1 },
       { id: "golden_hoarder", name: "King Midas", emoji: "👑", desc: "Find Golden Cat 5 times", check: (s) => s.goldenFinds >= 5 },
@@ -137,7 +137,9 @@
       { id: "mouse_hunter", name: "Mouse Hunter", emoji: "🐭", desc: "Catch a mouse", check: (s) => s.miceCaught >= 1 },
       { id: "mouse_pro", name: "Pest Control", emoji: "🪤", desc: "Catch 10 mice", check: (s) => s.miceCaught >= 10 },
       { id: "wake_up", name: "Wake Up Call", emoji: "⏰", desc: "Wake the napping kitty", check: (s) => s.wakeUps >= 1 },
-      { id: "konami", name: "Cheat Code", emoji: "🎮", desc: "Find the secret code", check: (s) => s.konamiUnlocked },
+      { id: "konami", name: "Tail Puller", emoji: "🐱", desc: "Find the secret tail", check: (s) => s.konamiUnlocked },
+      { id: "rainbow_barf", name: "Taste the Rainbow", emoji: "🌈", desc: "Witness the rainbow barf", check: (s) => s.rainbowBarfs >= 1 },
+      { id: "rainbow_5", name: "Rainbow Connoisseur", emoji: "🦄", desc: "5 rainbow barfs", check: (s) => s.rainbowBarfs >= 5 },
     ];
 
     const Sparkle = ({ x, y, delay, size = 14 }) => (
@@ -160,6 +162,7 @@
     function CuteCatMeme() {
       const saved = loadState() || {};
       const [catIndex, setCatIndex] = useState(0);
+      const [themeIndex, setThemeIndex] = useState(0);
       const [caption, setCaption] = useState(captions[0]);
       const [petCount, setPetCount] = useState(saved.petCount || 0);
       const [memeCount, setMemeCount] = useState(saved.memeCount || 0);
@@ -186,6 +189,8 @@
       const [hairballFloaters, setHairballFloaters] = useState([]);
       const [mouse, setMouse] = useState(null);
       const [isNapping, setIsNapping] = useState(false);
+      const [rainbowBarfs, setRainbowBarfs] = useState(saved.rainbowBarfs || 0);
+      const [barfing, setBarfing] = useState(false);
       const [, forceTick] = useState(0);
       const [showPurr, setShowPurr] = useState(false);
       const [bounce, setBounce] = useState(false);
@@ -196,27 +201,28 @@
       const [lastPetTime, setLastPetTime] = useState(0);
 
       const cat = catFaces[catIndex];
+      const theme = catFaces[themeIndex];
 
       // Persist
       useEffect(() => {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs }));
         } catch (e) {}
-      }, [petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked]);
+      }, [petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs]);
 
       // Check achievements
       useEffect(() => {
-        const state = { petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked };
+        const state = { petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs };
         const newly = ACHIEVEMENTS.filter((a) => a.check(state) && !unlocked.includes(a.id));
         if (newly.length > 0) {
           setUnlocked((u) => [...u, ...newly.map((a) => a.id)]);
           // Queue toasts
           newly.forEach((a, i) => {
-            setTimeout(() => setToast(a), i * 1800);
-            setTimeout(() => setToast(null), i * 1800 + 1700);
+            setTimeout(() => setToast(a), i * 4500);
+            setTimeout(() => setToast(null), i * 4500 + 4300);
           });
         }
-      }, [petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked]);
+      }, [petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs]);
 
       // Combo decay
       useEffect(() => {
@@ -225,28 +231,18 @@
         return () => clearTimeout(t);
       }, [combo, lastPetTime]);
 
-      // Konami code listener: ↑↑↓↓←→←→ba
-      useEffect(() => {
-        const seq = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
-        let pos = 0;
-        const onKey = (e) => {
-          const k = e.key;
-          if (k === seq[pos]) {
-            pos++;
-            if (pos === seq.length) {
-              setKonamiUnlocked(true);
-              setIsGolden(true);
-              setGoldenPetsLeft(20);
-              setGoldenFinds((g) => g + 1);
-              pos = 0;
-            }
-          } else {
-            pos = k === seq[0] ? 1 : 0;
-          }
-        };
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
-      }, []);
+      // Secret: click the wagging tail
+      const pullTail = (e) => {
+        e.stopPropagation();
+        setKonamiUnlocked(true);
+        setIsGolden(true);
+        setGoldenPetsLeft(20);
+        setGoldenFinds((g) => g + 1);
+        setCaption("HEY! Don't pull my tail!");
+        const sIdx = findCatByMood("Shocked");
+        setCatIndex(sIdx);
+        setThemeIndex(sIdx);
+      };
 
       // Idle nap detector — cat falls asleep after 30s of no clicks
       useEffect(() => {
@@ -264,12 +260,12 @@
       useEffect(() => {
         const t = setInterval(() => {
           if (mouse) return;
-          if (Math.random() < 0.15) {
+          if (Math.random() < 0.08) {
             const id = Date.now();
             setMouse({ id, dir: Math.random() < 0.5 ? "ltr" : "rtl" });
             setTimeout(() => setMouse((m) => (m && m.id === id ? null : m)), 4000);
           }
-        }, 8000);
+        }, 20000);
         return () => clearInterval(t);
       }, [mouse]);
 
@@ -314,29 +310,31 @@
         setTimeout(() => setWiggle(false), 400);
       };
 
-      const driftMood = (reason) => {
+      // Spontaneous drift only changes the cat's FACE/mood, not the color theme.
+      // updateTheme=true is used by user-triggered changes (pet reactions).
+      const driftMood = (updateTheme = false) => {
         const options = moodTransitions[cat.mood] || catFaces.map((c) => c.mood);
         const nextMood = options[Math.floor(Math.random() * options.length)];
         const nextIdx = findCatByMood(nextMood);
         setCatIndex(nextIdx);
+        if (updateTheme) setThemeIndex(nextIdx);
         markMoodSeen(catFaces[nextIdx].mood);
-        // Sometimes a fresh caption to match
-        if (Math.random() < 0.6) {
+        if (updateTheme && Math.random() < 0.6) {
           setCaption(captions[Math.floor(Math.random() * captions.length)]);
         }
-        flashMoodChange();
       };
 
-      // Spontaneous mood drift — cat changes how it feels every few seconds
-      // Pauses while user is actively clicking (avoids double-flashing)
+      // Spontaneous mood drift — slow & subtle, face only (colors stay put).
+      // Skipped while napping so the Sleepy state actually persists.
       useEffect(() => {
+        if (isNapping) return;
         const interval = setInterval(() => {
           const sinceLastPet = Date.now() - lastPetTime;
-          if (sinceLastPet < 2000) return; // user is active, leave the cat alone
-          if (Math.random() < 0.5) driftMood("spontaneous");
-        }, 5000 + Math.random() * 3000);
+          if (sinceLastPet < 3000) return;
+          if (Math.random() < 0.3) driftMood(false);
+        }, 18000 + Math.random() * 8000);
         return () => clearInterval(interval);
-      }, [catIndex, lastPetTime]);
+      }, [catIndex, lastPetTime, isNapping]);
 
       const markMoodSeen = (mood) => {
         setSeenMoods((s) => (s.includes(mood) ? s : [...s, mood]));
@@ -347,6 +345,7 @@
         setTimeout(() => setBounce(false), 500);
         const next = Math.floor(Math.random() * catFaces.length);
         setCatIndex(next);
+        setThemeIndex(next);
         setCaption(captions[Math.floor(Math.random() * captions.length)]);
         setMemeCount((m) => m + 1);
         markMoodSeen(catFaces[next].mood);
@@ -367,7 +366,9 @@
         if (isNapping) {
           setIsNapping(false);
           setWakeUps((w) => w + 1);
-          setCatIndex(findCatByMood("Surprised"));
+          const sIdx = findCatByMood("Surprised");
+          setCatIndex(sIdx);
+          setThemeIndex(sIdx);
           setCaption("BWAH! You scared me!");
           setLastPetTime(now);
           flashMoodChange();
@@ -382,14 +383,14 @@
 
         // Track combo timing for "Quick Draw" achievement
         if (nextCombo === 1) setComboStartTime(now);
-        if (nextCombo === 10 && now - comboStartTime < 2000) setFastCombo10(true);
+        if (nextCombo === 10 && now - comboStartTime < 3000) setFastCombo10(true);
 
         // Track slow/patient pets (no combo)
         if (!inCombo) setSlowPets((s) => s + 1);
 
         // Night owl achievement
         const hr = new Date().getHours();
-        if (hr >= 0 && hr < 4) setMidnightPet(true);
+        if (hr >= 23 || hr < 5) setMidnightPet(true);
 
         // Pet value: golden = 10x, catnip frenzy = 3x
         let petValue = 1;
@@ -426,6 +427,18 @@
           setCaption("🌿 CATNIP FRENZY! 🌿");
         }
 
+        // Very rare: 0.6% chance for rainbow barf
+        if (!barfing && Math.random() < 0.006) {
+          setBarfing(true);
+          setRainbowBarfs((r) => r + 1);
+          setCaption("🌈 BLEEEEH 🌈");
+          const sIdx = findCatByMood("Dizzy");
+          setCatIndex(sIdx);
+          setThemeIndex(sIdx);
+          setPetCount((p) => p + 25);
+          setTimeout(() => setBarfing(false), 2500);
+        }
+
         // Spawn a floating heart/sparkle at click point
         const id = now + Math.random();
         const symbols = ["♥", "♡", "✦", "✧", "★", "🐾"];
@@ -453,7 +466,7 @@
         // Big combos can shock the cat (rare, throttled)
         if (nextCombo >= 15 && Math.random() < 0.25) {
           const idx = findCatByMood(["Shocked", "Dizzy", "Surprised"][Math.floor(Math.random() * 3)]);
-          setCatIndex(idx); markMoodSeen(catFaces[idx].mood); flashMoodChange();
+          setCatIndex(idx); setThemeIndex(idx); markMoodSeen(catFaces[idx].mood); flashMoodChange();
           setLastMoodChange(now);
           return;
         }
@@ -462,6 +475,7 @@
           const nextMood = r.to[Math.floor(Math.random() * r.to.length)];
           const idx = findCatByMood(nextMood);
           setCatIndex(idx);
+          setThemeIndex(idx);
           markMoodSeen(catFaces[idx].mood);
           flashMoodChange();
           setLastMoodChange(now);
@@ -470,12 +484,12 @@
 
       const resetProgress = () => {
         if (confirm("Reset all progress and achievements?")) {
-          setPetCount(0); setMemeCount(0); setSeenMoods([]); setPetByMood({}); setUnlocked([]); setMaxCombo(0); setCombo(0); setSlowPets(0); setFastCombo10(false); setMidnightPet(false); setGoldenFinds(0); setHairballs(0); setCatnipCount(0); setMiceCaught(0); setWakeUps(0); setKonamiUnlocked(false); setIsGolden(false); setGoldenPetsLeft(0); setCatnipUntil(0); setIsNapping(false);
+          setPetCount(0); setMemeCount(0); setSeenMoods([]); setPetByMood({}); setUnlocked([]); setMaxCombo(0); setCombo(0); setSlowPets(0); setFastCombo10(false); setMidnightPet(false); setGoldenFinds(0); setHairballs(0); setCatnipCount(0); setMiceCaught(0); setWakeUps(0); setKonamiUnlocked(false); setIsGolden(false); setGoldenPetsLeft(0); setCatnipUntil(0); setIsNapping(false); setRainbowBarfs(0); setBarfing(false);
         }
       };
 
       return (
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${cat.bg} 0%, #fafafa 50%, ${cat.bg} 100%)`, transition: "background 1.6s ease", fontFamily: "'Trebuchet MS', 'Comic Sans MS', cursive", overflow: "hidden", padding: 20 }}>
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${theme.bg} 0%, #fafafa 50%, ${theme.bg} 100%)`, transition: "background 1.6s ease", fontFamily: "'Trebuchet MS', 'Comic Sans MS', cursive", overflow: "hidden", padding: 20 }}>
           <style>{`
             @keyframes sparkle { 0%, 100% { opacity: 0.2; transform: scale(0.8) rotate(0deg); } 50% { opacity: 1; transform: scale(1.2) rotate(180deg); } }
             @keyframes floatUp { 0% { opacity: 0.8; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-120px) scale(0.5); } }
@@ -494,6 +508,8 @@
             @keyframes mouseRTL { 0% { right: -40px; } 100% { right: 100%; } }
             @keyframes rainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
             @keyframes zzz { 0%, 100% { opacity: 0.4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-6px); } }
+            @keyframes barfDrop { 0% { transform: translate(-50%, 0) scaleY(0.4); opacity: 0; } 15% { transform: translate(-50%, 10px) scaleY(1); opacity: 1; } 80% { transform: translate(-50%, 80px) scaleY(1); opacity: 1; } 100% { transform: translate(-50%, 110px) scaleY(0.6); opacity: 0; } }
+            @keyframes barfBlob { 0% { transform: translateY(0) rotate(0deg) scale(0.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(90px) rotate(360deg) scale(1); opacity: 0; } }
           `}</style>
 
           <div style={{ position: "relative", maxWidth: 400, width: "100%" }}>
@@ -503,37 +519,37 @@
             <Sparkle x="90%" y="65%" delay={1.5} />
             <Sparkle x="50%" y="2%" delay={0.8} size={10} />
 
-            <div style={{ background: "#fff", borderRadius: 28, padding: "36px 28px 28px", boxShadow: `0 20px 60px ${cat.accent}22, 0 4px 20px rgba(0,0,0,0.06)`, border: `3px solid ${isGolden ? "#FFD700" : cat.accent + "33"}`, position: "relative", overflow: "hidden", transition: "box-shadow 1.2s ease, border-color 1.2s ease", animation: isGolden ? "goldenGlow 2s ease-in-out infinite" : (Date.now() < catnipUntil ? "rainbow 1.5s linear infinite" : "none") }}>
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: `linear-gradient(90deg, ${cat.accent}, ${cat.accent}88, ${cat.accent})`, borderRadius: "28px 28px 0 0" }} />
+            <div style={{ background: "#fff", borderRadius: 28, padding: "36px 28px 28px", boxShadow: `0 20px 60px ${theme.accent}22, 0 4px 20px rgba(0,0,0,0.06)`, border: `3px solid ${isGolden ? "#FFD700" : theme.accent + "33"}`, position: "relative", overflow: "hidden", transition: "box-shadow 1.2s ease, border-color 1.2s ease", animation: isGolden ? "goldenGlow 2s ease-in-out infinite" : (Date.now() < catnipUntil ? "rainbow 1.5s linear infinite" : "none") }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: `linear-gradient(90deg, ${theme.accent}, ${theme.accent}88, ${theme.accent})`, borderRadius: "28px 28px 0 0" }} />
 
-              <div style={{ display: "inline-block", background: `${cat.accent}18`, color: cat.accent, padding: "4px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 20 }}>
+              <div style={{ display: "inline-block", background: `${theme.accent}18`, color: theme.accent, padding: "4px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 20 }}>
                 {cat.mood} kitty
               </div>
 
               <div onClick={petCat} style={{ cursor: "pointer", userSelect: "none", textAlign: "center", position: "relative", animation: bounce ? "bounce 0.5s ease" : wiggle ? "wiggle 0.4s ease" : "none" }}>
                 {showPurr && (
-                  <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", fontSize: 16, color: cat.accent, fontWeight: 700, animation: "purrPulse 1.2s ease-out forwards", whiteSpace: "nowrap" }}>purrr~ ♡</div>
+                  <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", fontSize: 16, color: theme.accent, fontWeight: 700, animation: "purrPulse 1.2s ease-out forwards", whiteSpace: "nowrap" }}>purrr~ ♡</div>
                 )}
 
-                <div style={{ fontSize: 42, lineHeight: 1, color: cat.accent, letterSpacing: 40, marginBottom: -10 }}>{cat.ears}</div>
+                <div style={{ fontSize: 42, lineHeight: 1, color: theme.accent, letterSpacing: 40, marginBottom: -10 }}>{cat.ears}</div>
 
-                <div style={{ background: `${cat.accent}10`, borderRadius: "50%", width: 180, height: 160, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", border: `2px solid ${cat.accent}20` }}>
-                  <div style={{ position: "absolute", left: -20, top: "55%", fontSize: 11, color: cat.accent + "66", letterSpacing: 2 }}>═══</div>
-                  <div style={{ position: "absolute", right: -20, top: "55%", fontSize: 11, color: cat.accent + "66", letterSpacing: 2 }}>═══</div>
+                <div style={{ background: `${theme.accent}10`, borderRadius: "50%", width: 180, height: 160, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", border: `2px solid ${theme.accent}20` }}>
+                  <div style={{ position: "absolute", left: -20, top: "55%", fontSize: 11, color: theme.accent + "66", letterSpacing: 2 }}>═══</div>
+                  <div style={{ position: "absolute", right: -20, top: "55%", fontSize: 11, color: theme.accent + "66", letterSpacing: 2 }}>═══</div>
                   <div style={{ fontSize: 36, letterSpacing: 16, animation: "blink 4s infinite", color: "#333" }}>{cat.eyes}</div>
                   {cat.blush && (
                     <div style={{ display: "flex", gap: 60, marginTop: -2 }}>
-                      <div style={{ width: 20, height: 12, borderRadius: "50%", background: `${cat.accent}30` }} />
-                      <div style={{ width: 20, height: 12, borderRadius: "50%", background: `${cat.accent}30` }} />
+                      <div style={{ width: 20, height: 12, borderRadius: "50%", background: `${theme.accent}30` }} />
+                      <div style={{ width: 20, height: 12, borderRadius: "50%", background: `${theme.accent}30` }} />
                     </div>
                   )}
-                  <div style={{ fontSize: 10, color: cat.accent, marginTop: 2 }}>▼</div>
+                  <div style={{ fontSize: 10, color: theme.accent, marginTop: 2 }}>▼</div>
                   <div style={{ fontSize: 30, marginTop: -4, color: "#555" }}>{cat.mouth}</div>
                 </div>
 
-                <div style={{ fontSize: 22, marginTop: -6, letterSpacing: 40, color: cat.accent + "88" }}>☾ ☽</div>
+                <div style={{ fontSize: 22, marginTop: -6, letterSpacing: 40, color: theme.accent + "88" }}>☾ ☽</div>
 
-                <div style={{ position: "absolute", right: 40, bottom: 10, fontSize: 36, color: cat.accent + "66", animation: "tailWag 1s ease-in-out infinite", transformOrigin: "bottom center" }}>∿</div>
+                <div onClick={pullTail} style={{ position: "absolute", right: 40, bottom: 10, fontSize: 36, color: theme.accent + "66", animation: "tailWag 1s ease-in-out infinite", transformOrigin: "bottom center", cursor: "pointer", zIndex: 3 }} title="Hmm, what's this...?">∿</div>
 
                 {petCount > 0 && (
                   <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
@@ -544,11 +560,11 @@
                 )}
                 <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
                   {floaters.map((f) => (
-                    <div key={f.id} style={{ position: "absolute", left: `${f.x}%`, bottom: 20, fontSize: 22, color: cat.accent, animation: "float2 1.5s ease-out forwards" }}>{f.sym}</div>
+                    <div key={f.id} style={{ position: "absolute", left: `${f.x}%`, bottom: 20, fontSize: 22, color: theme.accent, animation: "float2 1.5s ease-out forwards" }}>{f.sym}</div>
                   ))}
                 </div>
                 {combo >= 3 && (
-                  <div key={combo} style={{ position: "absolute", top: 4, right: 4, background: cat.accent, color: "#fff", padding: "4px 10px", borderRadius: 12, fontSize: 13, fontWeight: 800, animation: "comboPop 0.3s ease", boxShadow: `0 4px 12px ${cat.accent}66` }}>
+                  <div key={combo} style={{ position: "absolute", top: 4, right: 4, background: theme.accent, color: "#fff", padding: "4px 10px", borderRadius: 12, fontSize: 13, fontWeight: 800, animation: "comboPop 0.3s ease", boxShadow: `0 4px 12px ${theme.accent}66` }}>
                     COMBO x{combo} 🔥
                   </div>
                 )}
@@ -570,6 +586,14 @@
                 {hairballFloaters.map((h) => (
                   <div key={h.id} style={{ position: "absolute", left: `${h.x}%`, bottom: 30, fontSize: 22, animation: "hairballFloat 2.5s ease-out forwards", pointerEvents: "none" }}>🧶</div>
                 ))}
+                {barfing && (
+                  <div style={{ position: "absolute", left: "50%", top: "55%", pointerEvents: "none", zIndex: 4 }}>
+                    <div style={{ position: "absolute", left: 0, top: 0, transform: "translate(-50%, 0)", width: 18, height: 60, background: "linear-gradient(to bottom, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8f00ff)", borderRadius: "40% 40% 50% 50% / 20% 20% 80% 80%", animation: "barfDrop 2.5s ease-in forwards", boxShadow: "0 0 20px #ff00ff88" }} />
+                    {["🟥","🟧","🟨","🟩","🟦","🟪"].map((b, i) => (
+                      <div key={i} style={{ position: "absolute", left: (i - 2.5) * 10, top: 5, fontSize: 14, animation: `barfBlob 2.5s ease-in forwards`, animationDelay: `${i * 0.08}s` }}>{b}</div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {mouse && (
@@ -578,16 +602,16 @@
                 </div>
               )}
 
-              <div style={{ marginTop: 24, background: `${cat.accent}0C`, borderRadius: 20, padding: "14px 20px", textAlign: "center", position: "relative" }}>
-                <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: `8px solid ${cat.accent}0C` }} />
+              <div style={{ marginTop: 24, background: `${theme.accent}0C`, borderRadius: 20, padding: "14px 20px", textAlign: "center", position: "relative" }}>
+                <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: `8px solid ${theme.accent}0C` }} />
                 <p style={{ margin: 0, fontSize: 18, color: "#444", fontWeight: 600, fontStyle: "italic" }}>"{caption}"</p>
               </div>
 
               <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-                <button onClick={randomize} style={{ flex: 1, padding: "12px 0", borderRadius: 16, border: "none", background: cat.accent, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: `0 4px 14px ${cat.accent}44` }} onMouseDown={(e) => (e.target.style.transform = "scale(0.96)")} onMouseUp={(e) => (e.target.style.transform = "scale(1)")}>
+                <button onClick={randomize} style={{ flex: 1, padding: "12px 0", borderRadius: 16, border: "none", background: theme.accent, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "transform 0.15s ease, box-shadow 0.15s ease", boxShadow: `0 4px 14px ${theme.accent}44` }} onMouseDown={(e) => (e.target.style.transform = "scale(0.96)")} onMouseUp={(e) => (e.target.style.transform = "scale(1)")}>
                   🎲 New Meme
                 </button>
-                <button onClick={petCat} style={{ flex: 1, padding: "12px 0", borderRadius: 16, border: `2px solid ${cat.accent}33`, background: "transparent", color: cat.accent, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "transform 0.15s ease" }} onMouseDown={(e) => (e.target.style.transform = "scale(0.96)")} onMouseUp={(e) => (e.target.style.transform = "scale(1)")}>
+                <button onClick={petCat} style={{ flex: 1, padding: "12px 0", borderRadius: 16, border: `2px solid ${theme.accent}33`, background: "transparent", color: theme.accent, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "transform 0.15s ease" }} onMouseDown={(e) => (e.target.style.transform = "scale(0.96)")} onMouseUp={(e) => (e.target.style.transform = "scale(1)")}>
                   🐾 Pet ({petCount})
                 </button>
               </div>
@@ -598,12 +622,12 @@
                 <span>🏅 {unlocked.length}/{ACHIEVEMENTS.length}</span>
               </div>
 
-              <div style={{ marginTop: 8, height: 6, background: `${cat.accent}15`, borderRadius: 4, overflow: "hidden" }}>
-                <div style={{ width: `${(unlocked.length / ACHIEVEMENTS.length) * 100}%`, height: "100%", background: `linear-gradient(90deg, ${cat.accent}, ${cat.accent}88, ${cat.accent})`, backgroundSize: "200% 100%", animation: "shimmer 2s linear infinite", transition: "width 0.5s ease" }} />
+              <div style={{ marginTop: 8, height: 6, background: `${theme.accent}15`, borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ width: `${(unlocked.length / ACHIEVEMENTS.length) * 100}%`, height: "100%", background: `linear-gradient(90deg, ${theme.accent}, ${theme.accent}88, ${theme.accent})`, backgroundSize: "200% 100%", animation: "shimmer 2s linear infinite", transition: "width 0.5s ease" }} />
               </div>
 
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                <button onClick={() => setShowAchievements((v) => !v)} style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: `1px solid ${cat.accent}33`, background: "transparent", color: cat.accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                <button onClick={() => setShowAchievements((v) => !v)} style={{ flex: 1, padding: "8px 0", borderRadius: 12, border: `1px solid ${theme.accent}33`, background: "transparent", color: theme.accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                   🏅 {showAchievements ? "Hide" : "View"} Achievements
                 </button>
                 <button onClick={resetProgress} style={{ padding: "8px 12px", borderRadius: 12, border: `1px solid #ddd`, background: "transparent", color: "#999", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }} title="Reset progress">
@@ -612,13 +636,13 @@
               </div>
 
               {showAchievements && (
-                <div style={{ marginTop: 12, maxHeight: 220, overflowY: "auto", background: `${cat.accent}08`, borderRadius: 14, padding: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                <div style={{ marginTop: 12, maxHeight: 220, overflowY: "auto", background: `${theme.accent}08`, borderRadius: 14, padding: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                   {ACHIEVEMENTS.map((a) => {
                     const got = unlocked.includes(a.id);
                     return (
-                      <div key={a.id} title={a.desc} style={{ background: got ? `${cat.accent}22` : "#f5f5f5", borderRadius: 10, padding: "6px 8px", fontSize: 11, opacity: got ? 1 : 0.5, border: got ? `1px solid ${cat.accent}55` : "1px solid #eee" }}>
+                      <div key={a.id} title={a.desc} style={{ background: got ? `${theme.accent}22` : "#f5f5f5", borderRadius: 10, padding: "6px 8px", fontSize: 11, opacity: got ? 1 : 0.5, border: got ? `1px solid ${theme.accent}55` : "1px solid #eee" }}>
                         <div style={{ fontSize: 16 }}>{got ? a.emoji : "🔒"}</div>
-                        <div style={{ fontWeight: 700, color: got ? cat.accent : "#999" }}>{a.name}</div>
+                        <div style={{ fontWeight: 700, color: got ? theme.accent : "#999" }}>{a.name}</div>
                         <div style={{ color: "#888", fontSize: 10 }}>{a.desc}</div>
                       </div>
                     );
@@ -628,10 +652,10 @@
             </div>
 
             {toast && (
-              <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#fff", padding: "14px 22px", borderRadius: 16, boxShadow: `0 10px 40px ${cat.accent}55, 0 0 0 2px ${cat.accent}`, animation: "toastIn 0.4s ease", zIndex: 100, display: "flex", alignItems: "center", gap: 12, fontFamily: "inherit" }}>
+              <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#fff", padding: "14px 22px", borderRadius: 16, boxShadow: `0 10px 40px ${theme.accent}55, 0 0 0 2px ${theme.accent}`, animation: "toastIn 0.4s ease", zIndex: 100, display: "flex", alignItems: "center", gap: 12, fontFamily: "inherit" }}>
                 <div style={{ fontSize: 32 }}>{toast.emoji}</div>
                 <div>
-                  <div style={{ fontSize: 11, color: cat.accent, fontWeight: 800, letterSpacing: 1 }}>ACHIEVEMENT UNLOCKED</div>
+                  <div style={{ fontSize: 11, color: theme.accent, fontWeight: 800, letterSpacing: 1 }}>ACHIEVEMENT UNLOCKED</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#333" }}>{toast.name}</div>
                   <div style={{ fontSize: 12, color: "#888" }}>{toast.desc}</div>
                 </div>
