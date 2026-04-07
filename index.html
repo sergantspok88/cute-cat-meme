@@ -36,6 +36,15 @@
       { eyes: "◐ ◐", mouth: "з", ears: "∧ ∧", mood: "Sneaky", bg: "#FFF3E0", accent: "#F4511E", blush: false },
       { eyes: "≖ ≖", mouth: "_", ears: "∧ ∧", mood: "Done", bg: "#FAFAFA", accent: "#424242", blush: false },
       { eyes: "♪ ♪", mouth: "▽", ears: "∧ ∧", mood: "Singing", bg: "#E1F5FE", accent: "#0288D1", blush: true },
+      { eyes: "ᗒ ᗕ", mouth: "ω", ears: "∧ ∧", mood: "Curious", bg: "#E0F2F1", accent: "#00897B", blush: false },
+      { eyes: "◉ ◔", mouth: "ω", ears: "∧ ∧", mood: "Confused", bg: "#FFF9C4", accent: "#FBC02D", blush: false },
+      { eyes: "ᵔ ᵔ", mouth: "з", ears: "∧ ∧", mood: "Cheeky", bg: "#FFEBEE", accent: "#EF5350", blush: true },
+      { eyes: "▰ ▰", mouth: "ω", ears: "∧ ∧", mood: "Focused", bg: "#F5F5F5", accent: "#37474F", blush: false },
+      { eyes: "✦ ✦", mouth: "ᗢ", ears: "∧ ∧", mood: "Sparkly", bg: "#FFF0F5", accent: "#EC407A", blush: true },
+      { eyes: "◔̯◔", mouth: "ω", ears: "∧ ∧", mood: "Bored", bg: "#EEEEEE", accent: "#757575", blush: false },
+      { eyes: "ʘ ʘ", mouth: "Ｏ", ears: "∧ ∧", mood: "Amazed", bg: "#E8EAF6", accent: "#3949AB", blush: false },
+      { eyes: "◠ ◠", mouth: "ᴗ", ears: "∧ ∧", mood: "Content", bg: "#F1F8E9", accent: "#7CB342", blush: true },
+      { eyes: "Ò Ó", mouth: "Д", ears: "∧ ∧", mood: "Battle", bg: "#FFEBEE", accent: "#C62828", blush: false },
     ];
 
     const captions = [
@@ -69,6 +78,20 @@
       "The toilet water tastes superior",
       "I am loaf. Do not disturb loaf.",
       "Why pay for cat toys? Boxes exist.",
+      "I will headbutt your face at 5am",
+      "Treat dispenser is broken (you)",
+      "I have 47 toys, but the bottle cap is best",
+      "Slow blink = I tolerate you",
+      "Belly trap activated. Touch at your peril.",
+      "I am not stuck. I chose this.",
+      "The chair is mine. The bed is mine. EVERYTHING is mine.",
+      "I knocked, did you hear? *meow at 3am*",
+      "Squirrel outside. Must scream.",
+      "Yes I just ate. So?",
+      "Fetch? I'm a cat, not a dog. Try again.",
+      "I left a hairball as a gift. You're welcome.",
+      "The forbidden plant tasted divine",
+      "I'm judging your life choices",
     ];
 
     const ACHIEVEMENTS = [
@@ -89,6 +112,32 @@
       { id: "sleepy_pet", name: "Don't Wake It", emoji: "💤", desc: "Pet the Sleepy kitty", check: (s) => s.petByMood["Sleepy"] >= 1 },
       { id: "grumpy_pet", name: "Tamer", emoji: "😾", desc: "Pet the Grumpy kitty", check: (s) => s.petByMood["Grumpy"] >= 1 },
       { id: "magical_pet", name: "Wizard", emoji: "🪄", desc: "Pet the Magical kitty", check: (s) => s.petByMood["Magical"] >= 1 },
+      { id: "grumpy_tamer", name: "Soothsayer", emoji: "🧘", desc: "Pet Grumpy kitty 25 times", check: (s) => (s.petByMood["Grumpy"] || 0) >= 25 },
+      { id: "sleepy_lover", name: "Lullaby", emoji: "🌙", desc: "Pet Sleepy kitty 25 times", check: (s) => (s.petByMood["Sleepy"] || 0) >= 25 },
+      { id: "smitten_max", name: "True Love", emoji: "💞", desc: "Pet In Love kitty 50 times", check: (s) => (s.petByMood["In Love"] || 0) >= 50 },
+      { id: "hundred_memes", name: "Meme Sage", emoji: "📜", desc: "Roll 100 memes", check: (s) => s.memeCount >= 100 },
+      { id: "combo_50", name: "Hand of Fury", emoji: "🌪️", desc: "50-pet combo", check: (s) => s.maxCombo >= 50 },
+      { id: "combo_100", name: "Petting God", emoji: "🌌", desc: "100-pet combo", check: (s) => s.maxCombo >= 100 },
+      { id: "diverse", name: "Open Heart", emoji: "🌈", desc: "Pet 10 different moods", check: (s) => Object.keys(s.petByMood).length >= 10 },
+      { id: "every_mood", name: "Cat Therapist", emoji: "🛋️", desc: "Pet every mood at least once", check: (s) => Object.keys(s.petByMood).length >= catFaces.length },
+      { id: "patient", name: "Patient Soul", emoji: "🍵", desc: "Pet without combo (slow & steady, 20 pets)", check: (s) => s.slowPets >= 20 },
+      { id: "quick_draw", name: "Quick Draw", emoji: "🤠", desc: "Reach combo x10 in under 2s", check: (s) => s.fastCombo10 },
+      { id: "explorer", name: "Explorer", emoji: "🧭", desc: "See 15 different moods", check: (s) => s.seenMoods.length >= 15 },
+      { id: "shock_value", name: "Heart Stopper", emoji: "⚡", desc: "Pet Shocked kitty", check: (s) => (s.petByMood["Shocked"] || 0) >= 1 },
+      { id: "singer", name: "Choir Member", emoji: "🎤", desc: "Pet Singing kitty", check: (s) => (s.petByMood["Singing"] || 0) >= 1 },
+      { id: "starlight", name: "Stargazer", emoji: "✨", desc: "Pet Starstruck kitty 10 times", check: (s) => (s.petByMood["Starstruck"] || 0) >= 10 },
+      { id: "midnight", name: "Night Owl", emoji: "🦉", desc: "Pet between midnight and 4am", check: (s) => s.midnightPet },
+      { id: "marathon", name: "Marathoner", emoji: "🏃", desc: "5000 total pets", check: (s) => s.petCount >= 5000 },
+      { id: "golden_touch", name: "Golden Touch", emoji: "🌟", desc: "Find the rare Golden Cat", check: (s) => s.goldenFinds >= 1 },
+      { id: "golden_hoarder", name: "King Midas", emoji: "👑", desc: "Find Golden Cat 5 times", check: (s) => s.goldenFinds >= 5 },
+      { id: "hairball_1", name: "Ew, Gross", emoji: "🧶", desc: "Catch your first hairball", check: (s) => s.hairballs >= 1 },
+      { id: "hairball_10", name: "Hairball Hoarder", emoji: "🧺", desc: "Catch 10 hairballs", check: (s) => s.hairballs >= 10 },
+      { id: "catnip", name: "Catnip!", emoji: "🌿", desc: "Trigger a catnip frenzy", check: (s) => s.catnipCount >= 1 },
+      { id: "catnip_5", name: "Plant Dealer", emoji: "🍀", desc: "Trigger 5 catnip frenzies", check: (s) => s.catnipCount >= 5 },
+      { id: "mouse_hunter", name: "Mouse Hunter", emoji: "🐭", desc: "Catch a mouse", check: (s) => s.miceCaught >= 1 },
+      { id: "mouse_pro", name: "Pest Control", emoji: "🪤", desc: "Catch 10 mice", check: (s) => s.miceCaught >= 10 },
+      { id: "wake_up", name: "Wake Up Call", emoji: "⏰", desc: "Wake the napping kitty", check: (s) => s.wakeUps >= 1 },
+      { id: "konami", name: "Cheat Code", emoji: "🎮", desc: "Find the secret code", check: (s) => s.konamiUnlocked },
     ];
 
     const Sparkle = ({ x, y, delay, size = 14 }) => (
@@ -119,6 +168,25 @@
       const [unlocked, setUnlocked] = useState(saved.unlocked || []);
       const [maxCombo, setMaxCombo] = useState(saved.maxCombo || 0);
       const [combo, setCombo] = useState(0);
+      const [slowPets, setSlowPets] = useState(saved.slowPets || 0);
+      const [fastCombo10, setFastCombo10] = useState(saved.fastCombo10 || false);
+      const [midnightPet, setMidnightPet] = useState(saved.midnightPet || false);
+      const [comboStartTime, setComboStartTime] = useState(0);
+      const [lastMoodChange, setLastMoodChange] = useState(0);
+      // Rare event state
+      const [goldenFinds, setGoldenFinds] = useState(saved.goldenFinds || 0);
+      const [hairballs, setHairballs] = useState(saved.hairballs || 0);
+      const [catnipCount, setCatnipCount] = useState(saved.catnipCount || 0);
+      const [miceCaught, setMiceCaught] = useState(saved.miceCaught || 0);
+      const [wakeUps, setWakeUps] = useState(saved.wakeUps || 0);
+      const [konamiUnlocked, setKonamiUnlocked] = useState(saved.konamiUnlocked || false);
+      const [isGolden, setIsGolden] = useState(false);
+      const [goldenPetsLeft, setGoldenPetsLeft] = useState(0);
+      const [catnipUntil, setCatnipUntil] = useState(0);
+      const [hairballFloaters, setHairballFloaters] = useState([]);
+      const [mouse, setMouse] = useState(null);
+      const [isNapping, setIsNapping] = useState(false);
+      const [, forceTick] = useState(0);
       const [showPurr, setShowPurr] = useState(false);
       const [bounce, setBounce] = useState(false);
       const [wiggle, setWiggle] = useState(false);
@@ -132,13 +200,13 @@
       // Persist
       useEffect(() => {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked }));
         } catch (e) {}
-      }, [petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo]);
+      }, [petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked]);
 
       // Check achievements
       useEffect(() => {
-        const state = { petCount, memeCount, seenMoods, petByMood, maxCombo };
+        const state = { petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked };
         const newly = ACHIEVEMENTS.filter((a) => a.check(state) && !unlocked.includes(a.id));
         if (newly.length > 0) {
           setUnlocked((u) => [...u, ...newly.map((a) => a.id)]);
@@ -148,7 +216,7 @@
             setTimeout(() => setToast(null), i * 1800 + 1700);
           });
         }
-      }, [petCount, memeCount, seenMoods, petByMood, maxCombo]);
+      }, [petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked]);
 
       // Combo decay
       useEffect(() => {
@@ -156,6 +224,61 @@
         const t = setTimeout(() => setCombo(0), 1500);
         return () => clearTimeout(t);
       }, [combo, lastPetTime]);
+
+      // Konami code listener: ↑↑↓↓←→←→ba
+      useEffect(() => {
+        const seq = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+        let pos = 0;
+        const onKey = (e) => {
+          const k = e.key;
+          if (k === seq[pos]) {
+            pos++;
+            if (pos === seq.length) {
+              setKonamiUnlocked(true);
+              setIsGolden(true);
+              setGoldenPetsLeft(20);
+              setGoldenFinds((g) => g + 1);
+              pos = 0;
+            }
+          } else {
+            pos = k === seq[0] ? 1 : 0;
+          }
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+      }, []);
+
+      // Idle nap detector — cat falls asleep after 30s of no clicks
+      useEffect(() => {
+        const t = setInterval(() => {
+          if (lastPetTime > 0 && Date.now() - lastPetTime > 30000 && !isNapping) {
+            setIsNapping(true);
+            setCatIndex(findCatByMood("Sleepy"));
+          }
+          forceTick((n) => n + 1); // refresh catnip overlay timing
+        }, 1000);
+        return () => clearInterval(t);
+      }, [lastPetTime, isNapping]);
+
+      // Mouse spawner — independent random chance
+      useEffect(() => {
+        const t = setInterval(() => {
+          if (mouse) return;
+          if (Math.random() < 0.15) {
+            const id = Date.now();
+            setMouse({ id, dir: Math.random() < 0.5 ? "ltr" : "rtl" });
+            setTimeout(() => setMouse((m) => (m && m.id === id ? null : m)), 4000);
+          }
+        }, 8000);
+        return () => clearInterval(t);
+      }, [mouse]);
+
+      const catchMouse = () => {
+        if (!mouse) return;
+        setMouse(null);
+        setMiceCaught((c) => c + 1);
+        setPetCount((p) => p + 5);
+      };
 
       // Mood transition table — what each mood is likely to drift toward
       const moodTransitions = {
@@ -205,13 +328,15 @@
       };
 
       // Spontaneous mood drift — cat changes how it feels every few seconds
+      // Pauses while user is actively clicking (avoids double-flashing)
       useEffect(() => {
         const interval = setInterval(() => {
-          // 60% chance to drift each tick
-          if (Math.random() < 0.6) driftMood("spontaneous");
-        }, 3500 + Math.random() * 2500);
+          const sinceLastPet = Date.now() - lastPetTime;
+          if (sinceLastPet < 2000) return; // user is active, leave the cat alone
+          if (Math.random() < 0.5) driftMood("spontaneous");
+        }, 5000 + Math.random() * 3000);
         return () => clearInterval(interval);
-      }, [catIndex]);
+      }, [catIndex, lastPetTime]);
 
       const markMoodSeen = (mood) => {
         setSeenMoods((s) => (s.includes(mood) ? s : [...s, mood]));
@@ -225,23 +350,81 @@
         setCaption(captions[Math.floor(Math.random() * captions.length)]);
         setMemeCount((m) => m + 1);
         markMoodSeen(catFaces[next].mood);
+        setIsNapping(false);
+        // Rare: 1.5% chance to roll a Golden Cat
+        if (Math.random() < 0.015) {
+          setIsGolden(true);
+          setGoldenPetsLeft(15);
+          setGoldenFinds((g) => g + 1);
+          setCaption("✨ Legendary kitty appeared! ✨");
+        }
       };
 
       const petCat = (e) => {
         const now = Date.now();
+
+        // Wake from nap — first click after a nap surprises the cat
+        if (isNapping) {
+          setIsNapping(false);
+          setWakeUps((w) => w + 1);
+          setCatIndex(findCatByMood("Surprised"));
+          setCaption("BWAH! You scared me!");
+          setLastPetTime(now);
+          flashMoodChange();
+          return;
+        }
+
         const inCombo = now - lastPetTime < 800;
         const nextCombo = inCombo ? combo + 1 : 1;
         setCombo(nextCombo);
         setLastPetTime(now);
         if (nextCombo > maxCombo) setMaxCombo(nextCombo);
 
-        setPetCount((p) => p + 1);
+        // Track combo timing for "Quick Draw" achievement
+        if (nextCombo === 1) setComboStartTime(now);
+        if (nextCombo === 10 && now - comboStartTime < 2000) setFastCombo10(true);
+
+        // Track slow/patient pets (no combo)
+        if (!inCombo) setSlowPets((s) => s + 1);
+
+        // Night owl achievement
+        const hr = new Date().getHours();
+        if (hr >= 0 && hr < 4) setMidnightPet(true);
+
+        // Pet value: golden = 10x, catnip frenzy = 3x
+        let petValue = 1;
+        if (isGolden) petValue *= 10;
+        if (now < catnipUntil) petValue *= 3;
+        setPetCount((p) => p + petValue);
         setPetByMood((m) => ({ ...m, [cat.mood]: (m[cat.mood] || 0) + 1 }));
         markMoodSeen(cat.mood);
         setShowPurr(true);
         setWiggle(true);
         setTimeout(() => setShowPurr(false), 1200);
         setTimeout(() => setWiggle(false), 400);
+
+        // Decrement golden pet counter
+        if (isGolden) {
+          const left = goldenPetsLeft - 1;
+          setGoldenPetsLeft(left);
+          if (left <= 0) setIsGolden(false);
+        }
+
+        // Rare: 2.5% chance to cough up a hairball
+        if (Math.random() < 0.025) {
+          const hid = now + Math.random();
+          const hx = Math.random() * 70 + 15;
+          setHairballFloaters((f) => [...f, { id: hid, x: hx }]);
+          setHairballs((h) => h + 1);
+          setTimeout(() => setHairballFloaters((f) => f.filter((x) => x.id !== hid)), 2500);
+        }
+
+        // Rare: 1% chance to trigger catnip frenzy (5s)
+        if (now > catnipUntil && Math.random() < 0.01) {
+          setCatnipUntil(now + 5000);
+          setCatnipCount((c) => c + 1);
+          setCaption("🌿 CATNIP FRENZY! 🌿");
+        }
 
         // Spawn a floating heart/sparkle at click point
         const id = now + Math.random();
@@ -251,23 +434,27 @@
         setFloaters((f) => [...f, { id, sym, x: xPct }]);
         setTimeout(() => setFloaters((f) => f.filter((x) => x.id !== id)), 1500);
 
-        // Reactive mood change — cat may flip mood in response to being pet
-        // Different moods react differently
+        // Reactive mood change — throttled so it can't fire more than once
+        // every 2.5s. This stops the background from strobing during rapid
+        // clicks, which was hard on the eyes.
+        if (now - lastMoodChange < 2500) return;
+
         const reactions = {
-          "Sleepy":    { chance: 0.4, to: ["Grumpy", "Done", "Surprised"] },
-          "Grumpy":    { chance: 0.3, to: ["Happy", "Suspicious"] },
-          "Sad":       { chance: 0.5, to: ["Happy", "In Love", "Smiley"] },
-          "Suspicious":{ chance: 0.35, to: ["Happy", "Smug"] },
-          "Done":      { chance: 0.25, to: ["Grumpy", "Sleepy"] },
-          "Shocked":   { chance: 0.5, to: ["Dizzy", "Surprised"] },
-          "Happy":     { chance: 0.25, to: ["In Love", "Excited", "Smiley"] },
-          "Excited":   { chance: 0.3, to: ["Dizzy", "In Love", "Magical"] },
-          "In Love":   { chance: 0.2, to: ["Kissy", "Starstruck"] },
+          "Sleepy":    { chance: 0.25, to: ["Grumpy", "Done", "Surprised"] },
+          "Grumpy":    { chance: 0.2, to: ["Happy", "Suspicious"] },
+          "Sad":       { chance: 0.35, to: ["Happy", "In Love", "Smiley"] },
+          "Suspicious":{ chance: 0.2, to: ["Happy", "Smug"] },
+          "Done":      { chance: 0.15, to: ["Grumpy", "Sleepy"] },
+          "Shocked":   { chance: 0.3, to: ["Dizzy", "Surprised"] },
+          "Happy":     { chance: 0.15, to: ["In Love", "Excited", "Smiley"] },
+          "Excited":   { chance: 0.18, to: ["Dizzy", "In Love", "Magical"] },
+          "In Love":   { chance: 0.12, to: ["Kissy", "Starstruck"] },
         };
-        // Big combos can shock the cat
-        if (nextCombo >= 10 && Math.random() < 0.5) {
+        // Big combos can shock the cat (rare, throttled)
+        if (nextCombo >= 15 && Math.random() < 0.25) {
           const idx = findCatByMood(["Shocked", "Dizzy", "Surprised"][Math.floor(Math.random() * 3)]);
           setCatIndex(idx); markMoodSeen(catFaces[idx].mood); flashMoodChange();
+          setLastMoodChange(now);
           return;
         }
         const r = reactions[cat.mood];
@@ -277,17 +464,18 @@
           setCatIndex(idx);
           markMoodSeen(catFaces[idx].mood);
           flashMoodChange();
+          setLastMoodChange(now);
         }
       };
 
       const resetProgress = () => {
         if (confirm("Reset all progress and achievements?")) {
-          setPetCount(0); setMemeCount(0); setSeenMoods([]); setPetByMood({}); setUnlocked([]); setMaxCombo(0); setCombo(0);
+          setPetCount(0); setMemeCount(0); setSeenMoods([]); setPetByMood({}); setUnlocked([]); setMaxCombo(0); setCombo(0); setSlowPets(0); setFastCombo10(false); setMidnightPet(false); setGoldenFinds(0); setHairballs(0); setCatnipCount(0); setMiceCaught(0); setWakeUps(0); setKonamiUnlocked(false); setIsGolden(false); setGoldenPetsLeft(0); setCatnipUntil(0); setIsNapping(false);
         }
       };
 
       return (
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${cat.bg} 0%, #fff 50%, ${cat.bg} 100%)`, transition: "background 0.6s ease", fontFamily: "'Trebuchet MS', 'Comic Sans MS', cursive", overflow: "hidden", padding: 20 }}>
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${cat.bg} 0%, #fafafa 50%, ${cat.bg} 100%)`, transition: "background 1.6s ease", fontFamily: "'Trebuchet MS', 'Comic Sans MS', cursive", overflow: "hidden", padding: 20 }}>
           <style>{`
             @keyframes sparkle { 0%, 100% { opacity: 0.2; transform: scale(0.8) rotate(0deg); } 50% { opacity: 1; transform: scale(1.2) rotate(180deg); } }
             @keyframes floatUp { 0% { opacity: 0.8; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-120px) scale(0.5); } }
@@ -300,6 +488,12 @@
             @keyframes comboPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
             @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
             @keyframes float2 { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(0.6); } }
+            @keyframes goldenGlow { 0%, 100% { box-shadow: 0 0 20px 4px #FFD70066, 0 0 60px 8px #FFA50044; } 50% { box-shadow: 0 0 40px 10px #FFD700aa, 0 0 100px 20px #FFA50066; } }
+            @keyframes hairballFloat { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(-90px) rotate(360deg); opacity: 0; } }
+            @keyframes mouseLTR { 0% { left: -40px; } 100% { left: 100%; } }
+            @keyframes mouseRTL { 0% { right: -40px; } 100% { right: 100%; } }
+            @keyframes rainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+            @keyframes zzz { 0%, 100% { opacity: 0.4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-6px); } }
           `}</style>
 
           <div style={{ position: "relative", maxWidth: 400, width: "100%" }}>
@@ -309,7 +503,7 @@
             <Sparkle x="90%" y="65%" delay={1.5} />
             <Sparkle x="50%" y="2%" delay={0.8} size={10} />
 
-            <div style={{ background: "#fff", borderRadius: 28, padding: "36px 28px 28px", boxShadow: `0 20px 60px ${cat.accent}22, 0 4px 20px rgba(0,0,0,0.06)`, border: `3px solid ${cat.accent}33`, position: "relative", overflow: "hidden", transition: "box-shadow 0.4s ease, border-color 0.4s ease" }}>
+            <div style={{ background: "#fff", borderRadius: 28, padding: "36px 28px 28px", boxShadow: `0 20px 60px ${cat.accent}22, 0 4px 20px rgba(0,0,0,0.06)`, border: `3px solid ${isGolden ? "#FFD700" : cat.accent + "33"}`, position: "relative", overflow: "hidden", transition: "box-shadow 1.2s ease, border-color 1.2s ease", animation: isGolden ? "goldenGlow 2s ease-in-out infinite" : (Date.now() < catnipUntil ? "rainbow 1.5s linear infinite" : "none") }}>
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 6, background: `linear-gradient(90deg, ${cat.accent}, ${cat.accent}88, ${cat.accent})`, borderRadius: "28px 28px 0 0" }} />
 
               <div style={{ display: "inline-block", background: `${cat.accent}18`, color: cat.accent, padding: "4px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 20 }}>
@@ -358,7 +552,31 @@
                     COMBO x{combo} 🔥
                   </div>
                 )}
+                {isGolden && (
+                  <div style={{ position: "absolute", top: 4, left: 4, background: "#FFD700", color: "#5C3A00", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 800, boxShadow: "0 4px 12px #FFD70088" }}>
+                    ✨ GOLDEN x10 ({goldenPetsLeft})
+                  </div>
+                )}
+                {Date.now() < catnipUntil && (
+                  <div style={{ position: "absolute", top: 30, left: 4, background: "#8BC34A", color: "#fff", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 800 }}>
+                    🌿 CATNIP x3
+                  </div>
+                )}
+                {isNapping && (
+                  <div style={{ position: "absolute", top: 20, right: 30, fontSize: 24, color: "#5C6BC0", animation: "zzz 2s ease-in-out infinite" }}>
+                    z Z z
+                  </div>
+                )}
+                {hairballFloaters.map((h) => (
+                  <div key={h.id} style={{ position: "absolute", left: `${h.x}%`, bottom: 30, fontSize: 22, animation: "hairballFloat 2.5s ease-out forwards", pointerEvents: "none" }}>🧶</div>
+                ))}
               </div>
+
+              {mouse && (
+                <div onClick={catchMouse} style={{ position: "absolute", bottom: 12, fontSize: 24, cursor: "pointer", animation: `${mouse.dir === "ltr" ? "mouseLTR" : "mouseRTL"} 4s linear forwards`, zIndex: 5, userSelect: "none" }} title="Catch the mouse!">
+                  {mouse.dir === "ltr" ? "🐭" : "🐭"}
+                </div>
+              )}
 
               <div style={{ marginTop: 24, background: `${cat.accent}0C`, borderRadius: 20, padding: "14px 20px", textAlign: "center", position: "relative" }}>
                 <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: `8px solid ${cat.accent}0C` }} />
