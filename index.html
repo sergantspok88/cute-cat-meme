@@ -45,6 +45,12 @@
       { eyes: "ʘ ʘ", mouth: "Ｏ", ears: "∧ ∧", mood: "Amazed", bg: "#E8EAF6", accent: "#3949AB", blush: false },
       { eyes: "◠ ◠", mouth: "ᴗ", ears: "∧ ∧", mood: "Content", bg: "#F1F8E9", accent: "#7CB342", blush: true },
       { eyes: "Ò Ó", mouth: "Д", ears: "∧ ∧", mood: "Battle", bg: "#FFEBEE", accent: "#C62828", blush: false },
+      { eyes: "ಠ ಠ", mouth: "ε", ears: "∧ ∧", mood: "Mischief", bg: "#FFF3E0", accent: "#FB8C00", blush: false },
+      { eyes: "⁄ ⁄", mouth: "⌒", ears: "∧ ∧", mood: "Embarrassed", bg: "#FFEBEE", accent: "#EC407A", blush: true },
+      { eyes: "Ｔ Ｔ", mouth: "Д", ears: "∧ ∧", mood: "Dramatic", bg: "#EDE7F6", accent: "#5E35B1", blush: false },
+      { eyes: "￢ ￢", mouth: "ᴗ", ears: "∧ ∧", mood: "Snobby", bg: "#F3E5F5", accent: "#9C27B0", blush: false },
+      { eyes: ">︿<", mouth: "Ｏ", ears: "∧ ∧", mood: "Hangry", bg: "#FFEBEE", accent: "#D84315", blush: false },
+      { eyes: "◕‿◕", mouth: "ᴗ", ears: "∧ ∧", mood: "Wholesome", bg: "#FFF8E1", accent: "#FFA000", blush: true },
     ];
 
     const captions = [
@@ -92,6 +98,23 @@
       "I left a hairball as a gift. You're welcome.",
       "The forbidden plant tasted divine",
       "I'm judging your life choices",
+      "I have selected this item for the floor",
+      "9 lives, 0 regrets",
+      "Stop typing. Pet. Now.",
+      "I screamed for no reason. You're welcome.",
+      "The sock is my prey now",
+      "I will lay on whatever you need most",
+      "Sunbeam acquired. Do not move me.",
+      "I invented a new sound. It's illegal.",
+      "If I close my eyes you can't see me",
+      "The shoebox > the shoes",
+      "I licked the suspicious thing. Worth it.",
+      "Tax collector, here for your dinner",
+      "I knocked it down for science",
+      "Hooman returns! Must scream and ignore.",
+      "I am 80% fluff, 20% spite",
+      "Why sleep on the bed when the floor is haunted",
+      "I bring you this leaf. It is now your problem.",
     ];
 
     const ACHIEVEMENTS = [
@@ -108,10 +131,10 @@
       { id: "combo_5", name: "Combo x5", emoji: "🔥", desc: "5 pets in a row fast", check: (s) => s.maxCombo >= 5 },
       { id: "combo_15", name: "On Fire", emoji: "💥", desc: "15-pet combo", check: (s) => s.maxCombo >= 15 },
       { id: "combo_30", name: "Unstoppable", emoji: "⚡", desc: "30-pet combo", check: (s) => s.maxCombo >= 30 },
-      { id: "in_love", name: "Smitten", emoji: "💘", desc: "Pet the In Love kitty", check: (s) => s.petByMood["In Love"] >= 1 },
-      { id: "sleepy_pet", name: "Don't Wake It", emoji: "💤", desc: "Pet the Sleepy kitty", check: (s) => s.petByMood["Sleepy"] >= 1 },
-      { id: "grumpy_pet", name: "Tamer", emoji: "😾", desc: "Pet the Grumpy kitty", check: (s) => s.petByMood["Grumpy"] >= 1 },
-      { id: "magical_pet", name: "Wizard", emoji: "🪄", desc: "Pet the Magical kitty", check: (s) => s.petByMood["Magical"] >= 1 },
+      { id: "in_love", name: "Smitten", emoji: "💘", desc: "Pet the In Love kitty", check: (s) => (s.petByMood["In Love"] || 0) >= 1 },
+      { id: "sleepy_pet", name: "Don't Wake It", emoji: "💤", desc: "Pet the Sleepy kitty", check: (s) => (s.petByMood["Sleepy"] || 0) >= 1 },
+      { id: "grumpy_pet", name: "Tamer", emoji: "😾", desc: "Pet the Grumpy kitty", check: (s) => (s.petByMood["Grumpy"] || 0) >= 1 },
+      { id: "magical_pet", name: "Wizard", emoji: "🪄", desc: "Pet the Magical kitty", check: (s) => (s.petByMood["Magical"] || 0) >= 1 },
       { id: "grumpy_tamer", name: "Soothsayer", emoji: "🧘", desc: "Pet Grumpy kitty 25 times", check: (s) => (s.petByMood["Grumpy"] || 0) >= 25 },
       { id: "sleepy_lover", name: "Lullaby", emoji: "🌙", desc: "Pet Sleepy kitty 25 times", check: (s) => (s.petByMood["Sleepy"] || 0) >= 25 },
       { id: "smitten_max", name: "True Love", emoji: "💞", desc: "Pet In Love kitty 50 times", check: (s) => (s.petByMood["In Love"] || 0) >= 50 },
@@ -234,7 +257,7 @@
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify({ petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs, cooldownTier }));
         } catch (e) {}
-      }, [petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs]);
+      }, [petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs, cooldownTier]);
 
       // Check achievements
       useEffect(() => {
@@ -316,10 +339,15 @@
         "ur cat: pls clarify ur stance on belly rubs",
       ];
 
+      // Refs let spawner intervals read latest gating state without restarting
+      const gateRef = useRef({});
+      gateRef.current = { cucumber, isNapping, cooldownUntil, boxOffer, boxUntil, laser, textNote, loafUntil };
+
       // Cucumber jumpscare spawner
       useEffect(() => {
         const t = setInterval(() => {
-          if (cucumber || isNapping || Date.now() < cooldownUntil) return;
+          const g = gateRef.current;
+          if (g.cucumber || g.isNapping || Date.now() < g.cooldownUntil) return;
           if (Math.random() < 0.05) {
             setCucumber(true);
             const sIdx = findCatByMood("Shocked");
@@ -330,12 +358,13 @@
           }
         }, 120000);
         return () => clearInterval(t);
-      }, [cucumber, isNapping, cooldownUntil]);
+      }, []);
 
       // Box spawner — drops occasionally
       useEffect(() => {
         const t = setInterval(() => {
-          if (boxOffer || Date.now() < boxUntil || isNapping) return;
+          const g = gateRef.current;
+          if (g.boxOffer || Date.now() < g.boxUntil || g.isNapping) return;
           if (Math.random() < 0.07) {
             const id = Date.now();
             setBoxOffer({ id });
@@ -343,7 +372,7 @@
           }
         }, 60000);
         return () => clearInterval(t);
-      }, [boxOffer, boxUntil, isNapping]);
+      }, []);
 
       const sitInBox = () => {
         if (!boxOffer) return;
@@ -355,7 +384,8 @@
       // Laser pointer spawner
       useEffect(() => {
         const t = setInterval(() => {
-          if (laser || isNapping || Date.now() < cooldownUntil) return;
+          const g = gateRef.current;
+          if (g.laser || g.isNapping || Date.now() < g.cooldownUntil) return;
           if (Math.random() < 0.07) {
             const id = Date.now();
             setLaser({ id, dir: Math.random() < 0.5 ? "ltr" : "rtl" });
@@ -363,7 +393,7 @@
           }
         }, 50000);
         return () => clearInterval(t);
-      }, [laser, isNapping, cooldownUntil]);
+      }, []);
 
       const chaseLaser = (e) => {
         if (e) e.stopPropagation();
@@ -397,6 +427,7 @@
               setCaption("🎯 CORNER HIT!");
               setToast({ id: "corner", name: "Corner Hit!", emoji: "🎯", desc: "The cat found a corner. Truly legendary." });
               setTimeout(() => setToast(null), 4000);
+              setDvdMode(false);
             }
             return { x: nx, y: ny };
           });
@@ -407,51 +438,69 @@
       // Cat text notifications
       useEffect(() => {
         const t = setInterval(() => {
-          if (textNote || isNapping || Date.now() < cooldownUntil) return;
+          const g = gateRef.current;
+          if (g.textNote || g.isNapping || Date.now() < g.cooldownUntil) return;
           if (Math.random() < 0.1) {
-            const idx = textIdx % catTexts.length;
-            setTextNote(catTexts[idx]);
-            setTextIdx((i) => i + 1);
+            setTextIdx((i) => {
+              setTextNote(catTexts[i % catTexts.length]);
+              return i + 1;
+            });
             setTimeout(() => setTextNote(null), 5000);
           }
         }, 150000);
         return () => clearInterval(t);
-      }, [textNote, isNapping, cooldownUntil, textIdx]);
+      }, []);
 
       // Loaf mode
       useEffect(() => {
         const t = setInterval(() => {
-          if (Date.now() < loafUntil || isNapping || Date.now() < cooldownUntil) return;
+          const g = gateRef.current;
+          if (Date.now() < g.loafUntil || g.isNapping || Date.now() < g.cooldownUntil) return;
           if (Math.random() < 0.06) {
             setLoafUntil(Date.now() + 8000);
             setCaption("🍞 i am bread now");
           }
         }, 80000);
         return () => clearInterval(t);
-      }, [loafUntil, isNapping, cooldownUntil]);
+      }, []);
 
       // Mood transition table — what each mood is likely to drift toward
       const moodTransitions = {
-        "Happy":     ["Excited", "In Love", "Smiley", "Singing"],
-        "Excited":   ["Happy", "Dizzy", "Starstruck", "Magical"],
-        "Kissy":     ["In Love", "Happy", "Smitten", "Smiley"],
-        "Sleepy":    ["Grumpy", "Done", "Happy"],
-        "Surprised": ["Shocked", "Excited", "Suspicious"],
-        "In Love":   ["Kissy", "Happy", "Magical", "Starstruck"],
-        "Sad":       ["Grumpy", "Sleepy", "Happy"],
-        "Shocked":   ["Surprised", "Dizzy", "Done"],
-        "Dizzy":     ["Surprised", "Sleepy", "Happy"],
-        "Greedy":    ["Smug", "Sneaky", "Excited"],
-        "Suspicious":["Grumpy", "Sneaky", "Done"],
-        "Starstruck":["In Love", "Excited", "Magical"],
-        "Grumpy":    ["Done", "Sad", "Suspicious"],
-        "Smug":      ["Greedy", "Sneaky", "Happy"],
-        "Hypno":     ["Dizzy", "Magical", "Surprised"],
-        "Smiley":    ["Happy", "Singing", "Excited"],
-        "Magical":   ["Starstruck", "Hypno", "In Love"],
-        "Sneaky":    ["Smug", "Greedy", "Suspicious"],
-        "Done":      ["Grumpy", "Sleepy", "Sad"],
-        "Singing":   ["Happy", "Excited", "Smiley"],
+        "Happy":       ["Excited", "In Love", "Smiley", "Singing", "Content"],
+        "Excited":     ["Happy", "Dizzy", "Starstruck", "Magical", "Sparkly"],
+        "Kissy":       ["In Love", "Happy", "Smiley", "Wholesome"],
+        "Sleepy":      ["Grumpy", "Done", "Happy", "Bored"],
+        "Surprised":   ["Shocked", "Excited", "Suspicious", "Amazed"],
+        "In Love":     ["Kissy", "Happy", "Magical", "Starstruck", "Wholesome"],
+        "Sad":         ["Grumpy", "Sleepy", "Happy", "Dramatic"],
+        "Shocked":     ["Surprised", "Dizzy", "Done", "Dramatic"],
+        "Dizzy":       ["Surprised", "Sleepy", "Happy", "Confused"],
+        "Greedy":      ["Smug", "Sneaky", "Excited", "Hangry"],
+        "Suspicious":  ["Grumpy", "Sneaky", "Done", "Focused"],
+        "Starstruck":  ["In Love", "Excited", "Magical", "Sparkly"],
+        "Grumpy":      ["Done", "Sad", "Suspicious", "Hangry"],
+        "Smug":        ["Greedy", "Sneaky", "Happy", "Snobby"],
+        "Hypno":       ["Dizzy", "Magical", "Surprised", "Confused"],
+        "Smiley":      ["Happy", "Singing", "Excited", "Content"],
+        "Magical":     ["Starstruck", "Hypno", "In Love", "Sparkly"],
+        "Sneaky":      ["Smug", "Greedy", "Suspicious", "Mischief"],
+        "Done":        ["Grumpy", "Sleepy", "Sad", "Bored"],
+        "Singing":     ["Happy", "Excited", "Smiley"],
+        "Curious":     ["Confused", "Suspicious", "Excited", "Amazed"],
+        "Confused":    ["Curious", "Dizzy", "Suspicious", "Surprised"],
+        "Cheeky":      ["Smug", "Sneaky", "Mischief", "Excited"],
+        "Focused":     ["Battle", "Suspicious", "Done", "Sneaky"],
+        "Sparkly":     ["Magical", "Starstruck", "In Love", "Excited"],
+        "Bored":       ["Done", "Sleepy", "Sad", "Grumpy"],
+        "Amazed":      ["Starstruck", "Sparkly", "Excited", "Curious"],
+        "Content":     ["Happy", "Sleepy", "Smiley", "Wholesome"],
+        "Battle":      ["Grumpy", "Focused", "Shocked", "Done"],
+        "Mischief":    ["Sneaky", "Cheeky", "Smug", "Greedy"],
+        "Embarrassed": ["Sad", "Surprised", "Happy", "Kissy"],
+        "Dramatic":    ["Sad", "Shocked", "Done", "Embarrassed"],
+        "Snobby":      ["Smug", "Done", "Bored", "Suspicious"],
+        "Hangry":      ["Grumpy", "Greedy", "Battle", "Done"],
+        "Wholesome":   ["Happy", "In Love", "Smiley", "Content"],
       };
 
       const findCatByMood = (mood) => {
@@ -541,14 +590,31 @@
         // Exit DVD screensaver on any pet
         if (dvdMode) { setDvdMode(false); }
 
-        // Wake from nap — first click after a nap surprises the cat
+        // Wake from nap — first click after a nap surprises the cat.
+        // Still counts as petting the Sleepy kitty (it WAS sleepy when you touched it).
         if (isNapping) {
           setIsNapping(false);
           setWakeUps((w) => w + 1);
+          setPetByMood((m) => ({ ...m, Sleepy: (m.Sleepy || 0) + 1 }));
+          markMoodSeen("Sleepy");
           const sIdx = findCatByMood("Surprised");
           setCatIndex(sIdx);
           setThemeIndex(sIdx);
-          setCaption("BWAH! You scared me!");
+          const wakeReactions = [
+            "BWAH! You scared me!",
+            "AH! I was DREAMING about tuna!",
+            "rude. extremely rude.",
+            "five more minutes... pls...",
+            "I was THIS close to catching the dream mouse!",
+            "*startled meow*",
+            "you have interrupted my IMPORTANT cat business",
+            "I will remember this. I have a list.",
+            "EXCUSE you??",
+            "the audacity. the AUDACITY.",
+            "I wasn't sleeping I was just... resting my eyes",
+            "you owe me a treat for that",
+          ];
+          setCaption(wakeReactions[Math.floor(Math.random() * wakeReactions.length)]);
           setLastPetTime(now);
           flashMoodChange();
           return;
@@ -645,15 +711,41 @@
         if (now - lastMoodChange < 2500) return;
 
         const reactions = {
-          "Sleepy":    { chance: 0.25, to: ["Grumpy", "Done", "Surprised"] },
-          "Grumpy":    { chance: 0.2, to: ["Happy", "Suspicious"] },
-          "Sad":       { chance: 0.35, to: ["Happy", "In Love", "Smiley"] },
-          "Suspicious":{ chance: 0.2, to: ["Happy", "Smug"] },
-          "Done":      { chance: 0.15, to: ["Grumpy", "Sleepy"] },
-          "Shocked":   { chance: 0.3, to: ["Dizzy", "Surprised"] },
-          "Happy":     { chance: 0.15, to: ["In Love", "Excited", "Smiley"] },
-          "Excited":   { chance: 0.18, to: ["Dizzy", "In Love", "Magical"] },
-          "In Love":   { chance: 0.12, to: ["Kissy", "Starstruck"] },
+          "Sleepy":      { chance: 0.25, to: ["Grumpy", "Done", "Surprised"] },
+          "Grumpy":      { chance: 0.2,  to: ["Happy", "Suspicious"] },
+          "Sad":         { chance: 0.35, to: ["Happy", "In Love", "Smiley", "Wholesome"] },
+          "Suspicious":  { chance: 0.2,  to: ["Happy", "Smug", "Curious"] },
+          "Done":        { chance: 0.15, to: ["Grumpy", "Sleepy", "Bored"] },
+          "Shocked":     { chance: 0.3,  to: ["Dizzy", "Surprised", "Dramatic"] },
+          "Happy":       { chance: 0.15, to: ["In Love", "Excited", "Smiley", "Content"] },
+          "Excited":     { chance: 0.18, to: ["Dizzy", "In Love", "Magical", "Sparkly"] },
+          "In Love":     { chance: 0.12, to: ["Kissy", "Starstruck", "Wholesome"] },
+          "Curious":     { chance: 0.22, to: ["Happy", "Excited", "Amazed"] },
+          "Confused":    { chance: 0.25, to: ["Curious", "Surprised", "Happy"] },
+          "Cheeky":      { chance: 0.2,  to: ["Happy", "Smug", "Mischief"] },
+          "Focused":     { chance: 0.15, to: ["Done", "Suspicious", "Battle"] },
+          "Sparkly":     { chance: 0.18, to: ["In Love", "Magical", "Starstruck"] },
+          "Bored":       { chance: 0.3,  to: ["Happy", "Curious", "Content"] },
+          "Amazed":      { chance: 0.18, to: ["Starstruck", "Excited", "Sparkly"] },
+          "Content":     { chance: 0.1,  to: ["Happy", "In Love", "Wholesome"] },
+          "Battle":      { chance: 0.25, to: ["Surprised", "Done", "Confused"] },
+          "Mischief":    { chance: 0.2,  to: ["Sneaky", "Cheeky", "Smug"] },
+          "Embarrassed": { chance: 0.3,  to: ["Happy", "In Love", "Kissy"] },
+          "Dramatic":    { chance: 0.25, to: ["Sad", "Shocked", "Embarrassed"] },
+          "Snobby":      { chance: 0.18, to: ["Smug", "Suspicious", "Done"] },
+          "Hangry":      { chance: 0.22, to: ["Grumpy", "Greedy", "Battle"] },
+          "Wholesome":   { chance: 0.15, to: ["In Love", "Happy", "Smiley"] },
+          "Greedy":      { chance: 0.2,  to: ["Smug", "Hangry", "Excited"] },
+          "Smug":        { chance: 0.15, to: ["Happy", "Snobby", "Sneaky"] },
+          "Sneaky":      { chance: 0.2,  to: ["Mischief", "Smug", "Cheeky"] },
+          "Hypno":       { chance: 0.25, to: ["Dizzy", "Confused", "Magical"] },
+          "Magical":     { chance: 0.18, to: ["Sparkly", "Starstruck", "In Love"] },
+          "Starstruck":  { chance: 0.18, to: ["In Love", "Sparkly", "Amazed"] },
+          "Smiley":      { chance: 0.15, to: ["Happy", "Singing", "Content"] },
+          "Singing":     { chance: 0.15, to: ["Happy", "Smiley", "Excited"] },
+          "Kissy":       { chance: 0.18, to: ["In Love", "Wholesome", "Happy"] },
+          "Surprised":   { chance: 0.22, to: ["Excited", "Shocked", "Amazed"] },
+          "Dizzy":       { chance: 0.2,  to: ["Confused", "Surprised", "Happy"] },
         };
         // Big combos can shock the cat (rare, throttled)
         if (nextCombo >= 15 && Math.random() < 0.25) {
@@ -677,6 +769,9 @@
       const resetProgress = () => {
         if (confirm("Reset all progress and achievements?")) {
           setPetCount(0); setMemeCount(0); setSeenMoods([]); setPetByMood({}); setUnlocked([]); setMaxCombo(0); setCombo(0); setSlowPets(0); setFastCombo10(false); setMidnightPet(false); setGoldenFinds(0); setHairballs(0); setCatnipCount(0); setMiceCaught(0); setWakeUps(0); setKonamiUnlocked(false); setIsGolden(false); setGoldenPetsLeft(0); setCatnipUntil(0); setIsNapping(false); setRainbowBarfs(0); setBarfing(false);
+          setCooldownTier(0); setCooldownUntil(0); setCooldownMsg(""); setLastBarfTime(0);
+          setCucumber(false); setBoxOffer(null); setBoxUntil(0); setLaser(null);
+          setDvdMode(false); setTextNote(null); setTextIdx(0); setLoafUntil(0);
         }
       };
 
