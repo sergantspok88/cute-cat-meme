@@ -13,7 +13,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
     const catFaces = [
       { eyes: "◉ ◉", mouth: "ω", ears: "∧ ∧", mood: "Happy", bg: "#FFF5E6", accent: "#FF6B35", blush: true },
@@ -209,6 +209,22 @@
       const [cooldownMsg, setCooldownMsg] = useState("");
       const [cooldownTier, setCooldownTier] = useState(saved.cooldownTier || 0);
       const [lastBarfTime, setLastBarfTime] = useState(0);
+      // Cucumber jumpscare
+      const [cucumber, setCucumber] = useState(false);
+      // "If it fits, I sits" box mode
+      const [boxOffer, setBoxOffer] = useState(null); // {id} when available
+      const [boxUntil, setBoxUntil] = useState(0);
+      // Laser pointer
+      const [laser, setLaser] = useState(null); // {id, dir}
+      // DVD screensaver mode
+      const [dvdMode, setDvdMode] = useState(false);
+      const [dvdPos, setDvdPos] = useState({ x: 20, y: 20 });
+      const dvdVel = useRef({ dx: 1.4, dy: 1.0 });
+      // Cat text notification
+      const [textNote, setTextNote] = useState(null);
+      const [textIdx, setTextIdx] = useState(0);
+      // Loaf mode
+      const [loafUntil, setLoafUntil] = useState(0);
 
       const cat = catFaces[catIndex];
       const theme = catFaces[themeIndex];
@@ -285,6 +301,134 @@
         setMiceCaught((c) => c + 1);
         setPetCount((p) => p + 5);
       };
+
+      // Cat text messages — cycled, not random
+      const catTexts = [
+        "ur cat: bring snacks 🐟",
+        "ur cat: the red dot is back. send help",
+        "ur cat: i knocked something over. unrelated.",
+        "ur cat: why is the vacuum like that",
+        "ur cat: i love u (send tuna)",
+        "ur cat: 3am zoomies confirmed for tonight",
+        "ur cat: the box situation is unacceptable",
+        "ur cat: blink twice if u r the chosen one",
+        "ur cat: i sat on ur keyboard. ur welcome.",
+        "ur cat: pls clarify ur stance on belly rubs",
+      ];
+
+      // Cucumber jumpscare spawner
+      useEffect(() => {
+        const t = setInterval(() => {
+          if (cucumber || isNapping || Date.now() < cooldownUntil) return;
+          if (Math.random() < 0.05) {
+            setCucumber(true);
+            const sIdx = findCatByMood("Shocked");
+            setCatIndex(sIdx); setThemeIndex(sIdx);
+            setCaption("AAAAH! WHAT IS THAT?!");
+            flashMoodChange();
+            setTimeout(() => setCucumber(false), 2500);
+          }
+        }, 120000);
+        return () => clearInterval(t);
+      }, [cucumber, isNapping, cooldownUntil]);
+
+      // Box spawner — drops occasionally
+      useEffect(() => {
+        const t = setInterval(() => {
+          if (boxOffer || Date.now() < boxUntil || isNapping) return;
+          if (Math.random() < 0.07) {
+            const id = Date.now();
+            setBoxOffer({ id });
+            setTimeout(() => setBoxOffer((b) => (b && b.id === id ? null : b)), 6000);
+          }
+        }, 60000);
+        return () => clearInterval(t);
+      }, [boxOffer, boxUntil, isNapping]);
+
+      const sitInBox = () => {
+        if (!boxOffer) return;
+        setBoxOffer(null);
+        setBoxUntil(Date.now() + 8000);
+        setCaption("📦 if it fits, i sits");
+      };
+
+      // Laser pointer spawner
+      useEffect(() => {
+        const t = setInterval(() => {
+          if (laser || isNapping || Date.now() < cooldownUntil) return;
+          if (Math.random() < 0.07) {
+            const id = Date.now();
+            setLaser({ id, dir: Math.random() < 0.5 ? "ltr" : "rtl" });
+            setTimeout(() => setLaser((l) => (l && l.id === id ? null : l)), 5000);
+          }
+        }, 50000);
+        return () => clearInterval(t);
+      }, [laser, isNapping, cooldownUntil]);
+
+      const chaseLaser = (e) => {
+        if (e) e.stopPropagation();
+        if (!laser) return;
+        setLaser(null);
+        setCaption("MISSED IT! one more time...");
+        const sIdx = findCatByMood("Excited");
+        setCatIndex(sIdx); setThemeIndex(sIdx);
+        flashMoodChange();
+      };
+
+      // DVD screensaver — kicks in after 60s of additional nap idle
+      useEffect(() => {
+        if (!isNapping) { if (dvdMode) setDvdMode(false); return; }
+        const enterTimer = setTimeout(() => setDvdMode(true), 120000);
+        return () => clearTimeout(enterTimer);
+      }, [isNapping]);
+
+      useEffect(() => {
+        if (!dvdMode) return;
+        const t = setInterval(() => {
+          setDvdPos((p) => {
+            let nx = p.x + dvdVel.current.dx;
+            let ny = p.y + dvdVel.current.dy;
+            let bouncedX = false, bouncedY = false;
+            if (nx <= 0) { nx = 0; dvdVel.current.dx = Math.abs(dvdVel.current.dx); bouncedX = true; }
+            if (nx >= 85) { nx = 85; dvdVel.current.dx = -Math.abs(dvdVel.current.dx); bouncedX = true; }
+            if (ny <= 0) { ny = 0; dvdVel.current.dy = Math.abs(dvdVel.current.dy); bouncedY = true; }
+            if (ny >= 85) { ny = 85; dvdVel.current.dy = -Math.abs(dvdVel.current.dy); bouncedY = true; }
+            if (bouncedX && bouncedY) {
+              setCaption("🎯 CORNER HIT!");
+              setToast({ id: "corner", name: "Corner Hit!", emoji: "🎯", desc: "The cat found a corner. Truly legendary." });
+              setTimeout(() => setToast(null), 4000);
+            }
+            return { x: nx, y: ny };
+          });
+        }, 50);
+        return () => clearInterval(t);
+      }, [dvdMode]);
+
+      // Cat text notifications
+      useEffect(() => {
+        const t = setInterval(() => {
+          if (textNote || isNapping || Date.now() < cooldownUntil) return;
+          if (Math.random() < 0.1) {
+            const idx = textIdx % catTexts.length;
+            setTextNote(catTexts[idx]);
+            setTextIdx((i) => i + 1);
+            setTimeout(() => setTextNote(null), 5000);
+          }
+        }, 150000);
+        return () => clearInterval(t);
+      }, [textNote, isNapping, cooldownUntil, textIdx]);
+
+      // Loaf mode
+      useEffect(() => {
+        const t = setInterval(() => {
+          if (Date.now() < loafUntil || isNapping || Date.now() < cooldownUntil) return;
+          if (Math.random() < 0.06) {
+            setLoafUntil(Date.now() + 8000);
+            setCaption("🍞 i am bread now");
+          }
+        }, 80000);
+        return () => clearInterval(t);
+      }, [loafUntil, isNapping, cooldownUntil]);
 
       // Mood transition table — what each mood is likely to drift toward
       const moodTransitions = {
@@ -394,6 +538,9 @@
         // Cooldown lock — cat is on a break
         if (now < cooldownUntil) return;
 
+        // Exit DVD screensaver on any pet
+        if (dvdMode) { setDvdMode(false); }
+
         // Wake from nap — first click after a nap surprises the cat
         if (isNapping) {
           setIsNapping(false);
@@ -428,6 +575,7 @@
         let petValue = 1;
         if (isGolden) petValue *= 10;
         if (now < catnipUntil) petValue *= 3;
+        if (now < boxUntil) petValue *= 2;
         setPetCount((p) => {
           const next = p + petValue;
           // Crossed a 1000 milestone? Trigger cooldown break.
@@ -554,6 +702,14 @@
             @keyframes zzz { 0%, 100% { opacity: 0.4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-6px); } }
             @keyframes barfDrop { 0% { transform: translate(-50%, 0) scaleY(0.4); opacity: 0; } 15% { transform: translate(-50%, 10px) scaleY(1); opacity: 1; } 80% { transform: translate(-50%, 80px) scaleY(1); opacity: 1; } 100% { transform: translate(-50%, 110px) scaleY(0.6); opacity: 0; } }
             @keyframes barfBlob { 0% { transform: translateY(0) rotate(0deg) scale(0.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(90px) rotate(360deg) scale(1); opacity: 0; } }
+            @keyframes cucumberDrop { 0% { opacity: 0; transform: translateY(-30px) rotate(-20deg); } 30% { opacity: 1; transform: translateY(0) rotate(0deg); } 100% { opacity: 1; transform: translateY(0) rotate(0deg); } }
+            @keyframes boxBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+            @keyframes laserLTR { 0% { left: -20px; top: 30%; } 25% { top: 70%; } 50% { top: 20%; } 75% { top: 60%; } 100% { left: 100%; top: 40%; } }
+            @keyframes laserRTL { 0% { right: -20px; top: 60%; } 25% { top: 25%; } 50% { top: 70%; } 75% { top: 30%; } 100% { right: 100%; top: 50%; } }
+            @keyframes laserPulse { 0%, 100% { box-shadow: 0 0 8px 4px #ff000088; } 50% { box-shadow: 0 0 16px 8px #ff0000cc; } }
+            @keyframes textSlide { 0% { opacity: 0; transform: translateY(-12px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-8px); } }
+            @keyframes loafPulse { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.92); } }
+            @keyframes dvdFloat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
           `}</style>
 
           <div style={{ position: "relative", maxWidth: 400, width: "100%" }}>
@@ -636,6 +792,27 @@
                     z Z z
                   </div>
                 )}
+                {cucumber && (
+                  <div style={{ position: "absolute", left: "50%", bottom: 30, transform: "translateX(-50%)", fontSize: 48, animation: "cucumberDrop 0.4s ease-out forwards", zIndex: 4, pointerEvents: "none" }}>
+                    🥒
+                  </div>
+                )}
+                {Date.now() < boxUntil && (
+                  <div style={{ position: "absolute", left: "50%", bottom: 4, transform: "translateX(-50%)", fontSize: 80, zIndex: 5, pointerEvents: "none", animation: "boxBob 1.6s ease-in-out infinite" }}>
+                    📦
+                    <div style={{ position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)", fontSize: 18 }}>{cat.eyes}</div>
+                  </div>
+                )}
+                {Date.now() < loafUntil && (
+                  <div style={{ position: "absolute", top: 30, right: 4, background: "#D2691E", color: "#fff", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 800, animation: "loafPulse 2s ease-in-out infinite" }}>
+                    🍞 LOAF MODE
+                  </div>
+                )}
+                {dvdMode && (
+                  <div style={{ position: "absolute", left: `${dvdPos.x}%`, top: `${dvdPos.y}%`, fontSize: 32, zIndex: 7, pointerEvents: "none", animation: "dvdFloat 2s ease-in-out infinite", filter: `hue-rotate(${(dvdPos.x + dvdPos.y) * 4}deg)` }}>
+                    🐱
+                  </div>
+                )}
                 {hairballFloaters.map((h) => (
                   <div key={h.id} style={{ position: "absolute", left: `${h.x}%`, bottom: 30, fontSize: 22, animation: "hairballFloat 2.5s ease-out forwards", pointerEvents: "none" }}>🧶</div>
                 ))}
@@ -652,6 +829,22 @@
               {mouse && (
                 <div onClick={catchMouse} style={{ position: "absolute", bottom: 12, fontSize: 24, cursor: "pointer", animation: `${mouse.dir === "ltr" ? "mouseLTR" : "mouseRTL"} 4s linear forwards`, zIndex: 5, userSelect: "none" }} title="Catch the mouse!">
                   {mouse.dir === "ltr" ? "🐭" : "🐭"}
+                </div>
+              )}
+
+              {boxOffer && (
+                <div onClick={(e) => { e.stopPropagation(); sitInBox(); }} style={{ position: "absolute", left: 16, bottom: 80, fontSize: 36, cursor: "pointer", zIndex: 6, animation: "boxBob 1.6s ease-in-out infinite", userSelect: "none" }} title="If it fits, I sits!">
+                  📦
+                </div>
+              )}
+
+              {laser && (
+                <div onClick={chaseLaser} style={{ position: "absolute", width: 14, height: 14, borderRadius: "50%", background: "#ff0000", cursor: "pointer", zIndex: 8, animation: `${laser.dir === "ltr" ? "laserLTR" : "laserRTL"} 5s linear forwards, laserPulse 0.6s ease-in-out infinite`, userSelect: "none" }} title="Get the red dot!" />
+              )}
+
+              {textNote && (
+                <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#222", color: "#fff", padding: "8px 14px", borderRadius: 14, fontSize: 12, fontWeight: 600, zIndex: 9, boxShadow: "0 6px 20px rgba(0,0,0,0.25)", whiteSpace: "nowrap", animation: "textSlide 5s ease-in-out forwards", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  📱 {textNote}
                 </div>
               )}
 
