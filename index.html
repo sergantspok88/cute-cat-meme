@@ -140,6 +140,11 @@
       { id: "konami", name: "Tail Puller", emoji: "🐱", desc: "Find the secret tail", check: (s) => s.konamiUnlocked },
       { id: "rainbow_barf", name: "Taste the Rainbow", emoji: "🌈", desc: "Witness the rainbow barf", check: (s) => s.rainbowBarfs >= 1 },
       { id: "rainbow_5", name: "Rainbow Connoisseur", emoji: "🦄", desc: "5 rainbow barfs", check: (s) => s.rainbowBarfs >= 5 },
+      { id: "union_rep", name: "Union Rep", emoji: "✊", desc: "Survive your first mandatory pet break", check: (s) => (s.cooldownTier || 0) >= 1 },
+      { id: "collective_bargaining", name: "Collective Bargaining", emoji: "🪧", desc: "Endure 5 forced pet breaks", check: (s) => (s.cooldownTier || 0) >= 5 },
+      { id: "feeling_mutual", name: "The Feeling Is Mutual", emoji: "🙄", desc: "Pet the Done kitty 25 times", check: (s) => (s.petByMood["Done"] || 0) >= 25 },
+      { id: "trust_issues", name: "Trust Issues", emoji: "🤨", desc: "Pet the Suspicious kitty 15 times", check: (s) => (s.petByMood["Suspicious"] || 0) >= 15 },
+      { id: "accomplice", name: "Accomplice", emoji: "🕵️", desc: "Pet the Sneaky kitty 15 times", check: (s) => (s.petByMood["Sneaky"] || 0) >= 15 },
     ];
 
     const Sparkle = ({ x, y, delay, size = 14 }) => (
@@ -199,6 +204,11 @@
       const [showAchievements, setShowAchievements] = useState(false);
       const [floaters, setFloaters] = useState([]);
       const [lastPetTime, setLastPetTime] = useState(0);
+      // Petting cooldown — every 1000 pets the cat needs a 30s break
+      const [cooldownUntil, setCooldownUntil] = useState(0);
+      const [cooldownMsg, setCooldownMsg] = useState("");
+      const [cooldownTier, setCooldownTier] = useState(saved.cooldownTier || 0);
+      const [lastBarfTime, setLastBarfTime] = useState(0);
 
       const cat = catFaces[catIndex];
       const theme = catFaces[themeIndex];
@@ -206,13 +216,13 @@
       // Persist
       useEffect(() => {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs, cooldownTier }));
         } catch (e) {}
       }, [petCount, memeCount, seenMoods, petByMood, unlocked, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs]);
 
       // Check achievements
       useEffect(() => {
-        const state = { petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs };
+        const state = { petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs, cooldownTier };
         const newly = ACHIEVEMENTS.filter((a) => a.check(state) && !unlocked.includes(a.id));
         if (newly.length > 0) {
           setUnlocked((u) => [...u, ...newly.map((a) => a.id)]);
@@ -222,7 +232,7 @@
             setTimeout(() => setToast(null), i * 4500 + 4300);
           });
         }
-      }, [petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs]);
+      }, [petCount, memeCount, seenMoods, petByMood, maxCombo, slowPets, fastCombo10, midnightPet, goldenFinds, hairballs, catnipCount, miceCaught, wakeUps, konamiUnlocked, rainbowBarfs, cooldownTier]);
 
       // Combo decay
       useEffect(() => {
@@ -359,8 +369,30 @@
         }
       };
 
+      // Funny cooldown messages — cycled in order so each break is a fresh one
+      const cooldownMessages = [
+        "😤 My paws are TIRED. Give me a sec.",
+        "🛑 Pet union mandated break. Back in a bit.",
+        "😼 You've reached your daily pet quota. Please hold.",
+        "💅 Excuse me, I'm reapplying my fur conditioner.",
+        "📞 Hold please, the manager is on another call.",
+        "🥱 Even cats need PTO. Try again shortly.",
+        "🍣 Stepped out for a snack. BRB.",
+        "🧘 Meditating on the meaning of meow.",
+        "📚 Currently reading. Do not disturb.",
+        "🏖️ On vacation. Sand in my fur. Send help.",
+        "🚿 Bath time! (yes, really. shocking, I know.)",
+        "💤 Power nap in progress. Save your clicks.",
+        "🎻 Performing a dramatic violin solo. Encore in 30s.",
+        "🕵️ On a top-secret mission. Cannot be petted.",
+        "🧪 Conducting important science. Stand back.",
+      ];
+
       const petCat = (e) => {
         const now = Date.now();
+
+        // Cooldown lock — cat is on a break
+        if (now < cooldownUntil) return;
 
         // Wake from nap — first click after a nap surprises the cat
         if (isNapping) {
@@ -396,7 +428,18 @@
         let petValue = 1;
         if (isGolden) petValue *= 10;
         if (now < catnipUntil) petValue *= 3;
-        setPetCount((p) => p + petValue);
+        setPetCount((p) => {
+          const next = p + petValue;
+          // Crossed a 1000 milestone? Trigger cooldown break.
+          if (Math.floor(next / 1000) > Math.floor(p / 1000)) {
+            const idx = cooldownTier % cooldownMessages.length;
+            setCooldownMsg(cooldownMessages[idx]);
+            setCooldownTier((t) => t + 1);
+            setCooldownUntil(Date.now() + 30000);
+            setCaption(cooldownMessages[idx]);
+          }
+          return next;
+        });
         setPetByMood((m) => ({ ...m, [cat.mood]: (m[cat.mood] || 0) + 1 }));
         markMoodSeen(cat.mood);
         setShowPurr(true);
@@ -420,16 +463,17 @@
           setTimeout(() => setHairballFloaters((f) => f.filter((x) => x.id !== hid)), 2500);
         }
 
-        // Rare: 1% chance to trigger catnip frenzy (5s)
-        if (now > catnipUntil && Math.random() < 0.01) {
+        // Rare: 0.05% chance to trigger catnip frenzy (5s), with 90s cooldown after it ends
+        if (now > catnipUntil + 90000 && Math.random() < 0.0005) {
           setCatnipUntil(now + 5000);
           setCatnipCount((c) => c + 1);
           setCaption("🌿 CATNIP FRENZY! 🌿");
         }
 
-        // Very rare: 0.6% chance for rainbow barf
-        if (!barfing && Math.random() < 0.006) {
+        // Very rare: 0.04% chance for rainbow barf, with 60s cooldown
+        if (!barfing && now - lastBarfTime > 60000 && Math.random() < 0.0004) {
           setBarfing(true);
+          setLastBarfTime(now);
           setRainbowBarfs((r) => r + 1);
           setCaption("🌈 BLEEEEH 🌈");
           const sIdx = findCatByMood("Dizzy");
@@ -576,6 +620,15 @@
                 {Date.now() < catnipUntil && (
                   <div style={{ position: "absolute", top: 30, left: 4, background: "#8BC34A", color: "#fff", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 800 }}>
                     🌿 CATNIP x3
+                  </div>
+                )}
+                {Date.now() < cooldownUntil && (
+                  <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.82)", borderRadius: 24, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 6, padding: 20, textAlign: "center" }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: theme.accent, marginBottom: 10, lineHeight: 1.4 }}>{cooldownMsg}</div>
+                    <div style={{ fontSize: 36, fontWeight: 800, color: theme.accent, fontVariantNumeric: "tabular-nums" }}>
+                      {Math.ceil((cooldownUntil - Date.now()) / 1000)}s
+                    </div>
+                    <div style={{ fontSize: 11, color: "#888", marginTop: 6 }}>petting resumes shortly…</div>
                   </div>
                 )}
                 {isNapping && (
